@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+#-*- coding: utf-8 -*-
+'''
+Only:
+1. useful @ HC, hope they didn't change their html too often...
+2. Tested on OSX Lion 7.3 with python 2.7, never tested on other platforms, requires Beautiful
+Soup 4 (at least the beta version)
+'''
 
 from bs4 import BeautifulSoup
 import re
@@ -7,6 +14,8 @@ import sys
 import getopt
 import urllib2
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
 sfx = ('small.jpg', 'small.gif', 'small.png')
 USAGE = '''
 Usage: gh_downloader.py [arguments] 
@@ -37,8 +46,10 @@ def page_download(page_url):
     print len(soup.find_all("a", { "class" : "next" }))
     for src in soup.find_all('img'):
         if src.get('src').endswith(sfx):
-            #tgt_url = src.get('src').replace('small', '')
+            tgt_url = src.get('src').replace('small', 'big')
+            tgt_title = src.get('title')
             print src.get('src').replace('small', 'big')
+            os.system("wget -O " + str(tgt_title) + ".jpg " + tgt_url)
 
 def main():
     print "Started"

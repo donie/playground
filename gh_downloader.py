@@ -26,8 +26,9 @@ Arguments:
     -p          hc album's first page, please note, better be with the first page of the album
 
 Examples:
-    gh_downloader.py  -p
-    gh_mkfakefile.py  -h 
+    gh_downloader.py  -p http://my.hoopchina.com/3158969/photo/a39816-2.html
+    gh_mkfakefile.py  -u 3158969
+    gh_mkfakefile.py  -h
 '''
 
 def if_next(page_url):
@@ -44,13 +45,29 @@ def user_album(album_url):
     albums = urllib2.urlopen(album_url)
     soup = BeautifulSoup(albums, from_encoding="gb18030").find_all("div", { "class" : "album_list" })
     result = re.findall(r'<a href="(.*)"><img', str(soup), re.M)
+    album_list = {}
     for a in result:
         alt = re.findall('<a href="' + str(a) + "\"><img alt=\"(.*)\" border", str(soup), re.M)
         print "donwloading " + str(alt[0])
         os.system("mkdir -p " + str(alt[0]))
-        print a
+        album_list[str(alt[0])] = "http://my.hoopchina.com" + a
+        continue
+    return album_list
 
-def page_download(page_url):
+def user_album_download(album_list):
+    for folder, album in album_list.iteritems():
+        print "downloading album @ " + album
+        page_download(album, folder)
+        while not if_next(album) is None:
+            v = if_next (album)
+            page_no = page_no + 1
+            print "----------------------------------"
+            print "Page"+ str(page_no) + ":url is " + album
+            print "----------------------------------"
+            page_download(album, folder)
+            continue
+
+def page_download(page_url, folder):
     page = urllib2.urlopen(page_url)
     soup = BeautifulSoup(page)
     print len(soup.find_all("a", { "class" : "next" }))
@@ -59,7 +76,8 @@ def page_download(page_url):
             tgt_url = src.get('src').replace('small', 'big')
             tgt_title = src.get('title')
             print src.get('src').replace('small', 'big')
-            os.system("wget -O " + str(tgt_title) + ".jpg " + tgt_url)
+            print ("wget -O ./" + folder + "/"+ str(tgt_title) + ".jpg " + tgt_url)
+            os.system("wget -O ./" + folder + "/"+ str(tgt_title) + ".jpg " + tgt_url)
 
 def main():
     print "Started"
@@ -73,18 +91,30 @@ def main():
     user = False
     for o, v in opts:
         if o == "-p":
-            page_download(v)
+            print "downloading album @ " + v
+            page_download(v, '')
             while not if_next(v) is None:
                 v = if_next (v)
                 page_no = page_no + 1
                 print "----------------------------------"
-                print "Page"+ str(page_no) + ":url is " + url
+                print "Page"+ str(page_no) + ":url is " + v
                 print "----------------------------------"
-                page_download(v)
+                page_download(v, '')
                 continue
         elif o == "-u":
-            print "lol @ " + v
-            user_album(v)
+            v = "http://my.hoopchina.com/" + v + "/photo"
+            print "download user's all albums @ " + v
+            album_list = user_album(v)
+            user_album_download(album_list)
+            while not if_next(v) is None:
+                v = if_next (v)
+                page_no = page_no + 1
+                print "----------------------------------"
+                print "Page"+ str(page_no) + ":url is " + v
+                print "----------------------------------"
+                album_list = user_album(v)
+                user_album_download(album_list)
+                continue
             sys.exit()
         elif o in ("-h", "--help"):
             print USAGE

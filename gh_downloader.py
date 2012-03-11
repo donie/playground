@@ -40,6 +40,16 @@ def if_next(page_url):
         print "no more pages"
         print "----------------------------------"
 
+def user_album(album_url):
+    albums = urllib2.urlopen(album_url)
+    soup = BeautifulSoup(albums, from_encoding="gb18030").find_all("div", { "class" : "album_list" })
+    result = re.findall(r'<a href="(.*)"><img', str(soup), re.M)
+    for a in result:
+        alt = re.findall('<a href="' + str(a) + "\"><img alt=\"(.*)\" border", str(soup), re.M)
+        print "donwloading " + str(alt[0])
+        os.system("mkdir -p " + str(alt[0]))
+        print a
+
 def page_download(page_url):
     page = urllib2.urlopen(page_url)
     soup = BeautifulSoup(page)
@@ -53,7 +63,6 @@ def page_download(page_url):
 
 def main():
     print "Started"
-    url = "http://my.hoopchina.com/lishg1990/photo/a70625-1.html"
     try:
         opts, args = getopt.getopt(sys.argv[1:], "p:hu:", ["page=", "user="])
     except getopt.GetoptError, err:
@@ -75,6 +84,7 @@ def main():
                 continue
         elif o == "-u":
             print "lol @ " + v
+            user_album(v)
             sys.exit()
         elif o in ("-h", "--help"):
             print USAGE
@@ -83,4 +93,4 @@ def main():
             assert False, "unhandled option"
 
 if __name__ == '__main__':
-  main()
+    main()

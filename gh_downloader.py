@@ -5,14 +5,20 @@ Only:
 1. useful @ HC, hope they didn't change their html too often...
 2. Tested on OSX Lion 7.3 with python 2.7, never tested on other platforms, requires Beautiful
 Soup 4 (at least the beta version)
+
+To-do:
+    1. use PY libs to do the download...
+    2. Exception handler 
 '''
 
 from bs4 import BeautifulSoup
+from urlgrabber.progress import text_progress_meter
 import re
 import os
 import sys
 import getopt
 import urllib2
+import urlgrabber
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -48,15 +54,15 @@ def user_album(album_url):
     album_list = {}
     for a in result:
         alt = re.findall('<a href="' + str(a) + "\"><img alt=\"(.*)\" border", str(soup), re.M)
-        print "donwloading " + str(alt[0])
-        os.system("mkdir -p " + str(alt[0]))
+        print "creating directory: " + str(alt[0])
+        os.system("mkdir \"" + str(alt[0]) + "\"")
         album_list[str(alt[0])] = "http://my.hoopchina.com" + a
         continue
     return album_list
 
 def user_album_download(album_list):
     for folder, album in album_list.iteritems():
-        print "downloading album @ " + album
+        print "downloading images @ " + album
         page_download(album, folder)
         while not if_next(album) is None:
             v = if_next (album)
@@ -73,11 +79,10 @@ def page_download(page_url, folder):
     print len(soup.find_all("a", { "class" : "next" }))
     for src in soup.find_all('img'):
         if src.get('src').endswith(sfx):
-            tgt_url = src.get('src').replace('small', 'big')
-            tgt_title = src.get('title')
-            print src.get('src').replace('small', 'big')
-            print ("wget -O ./" + folder + "/"+ str(tgt_title) + ".jpg " + tgt_url)
-            os.system("wget -O ./" + folder + "/"+ str(tgt_title) + ".jpg " + tgt_url)
+            tgt_url = str(src.get('src').replace('small', 'big'))
+            print "saving : " + tgt_url 
+            tgt_name = os.path.basename(tgt_url)
+            urlgrabber.urlgrab(tgt_url, "./" + folder + "/" + tgt_name, progress_obj=urlgrabber.progress.TextMeter())
 
 def main():
     print "Started"
@@ -91,7 +96,7 @@ def main():
     user = False
     for o, v in opts:
         if o == "-p":
-            print "downloading album @ " + v
+            print "downloading images @ " + v
             page_download(v, '')
             while not if_next(v) is None:
                 v = if_next (v)
@@ -110,7 +115,7 @@ def main():
                 v = if_next (v)
                 page_no = page_no + 1
                 print "----------------------------------"
-                print "Page"+ str(page_no) + ":url is " + v
+                print "User's page "+ str(page_no) + "'s url is " + v
                 print "----------------------------------"
                 album_list = user_album(v)
                 user_album_download(album_list)

@@ -33,8 +33,8 @@ Arguments:
 
 Examples:
     gh_downloader.py  -p http://my.hoopchina.com/3158969/photo/a39816-2.html
-    gh_mkfakefile.py  -u 3158969
-    gh_mkfakefile.py  -h
+    gh_downloader.py  -u 3158969
+    gh_downloader.py  -h
 '''
 
 def if_next(page_url):

@@ -19,9 +19,11 @@ import sys
 import getopt
 import urllib2
 import urlgrabber
+import logging
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
+logging.basicConfig(format = '%(asctime)s %(message)s', filename='output.log',level=logging.DEBUG)
 sfx = ('small.jpg', 'small.gif', 'small.png')
 USAGE = '''
 Usage: gh_downloader.py [arguments] 
@@ -33,8 +35,8 @@ Arguments:
 
 Examples:
     gh_downloader.py  -p http://my.hoopchina.com/3158969/photo/a39816-2.html
-    gh_mkfakefile.py  -u 3158969
-    gh_mkfakefile.py  -h
+    gh_downloader.py  -u 3158969
+    gh_downloader.py  -h
 '''
 
 def if_next(page_url):
@@ -84,8 +86,9 @@ def page_download(page_url, folder):
             tgt_name = os.path.basename(tgt_url)
             try:
                 urlgrabber.urlgrab(tgt_url, "./" + folder + "/" + tgt_name, progress_obj=urlgrabber.progress.TextMeter())
-            except urlgrabber.grabber.URLGrabError as detail:
-                print "Error eccours: " + detail
+            except Exception, e: 
+                print "Oops: " + str(e)
+                logging.exception("Problem occurs when grabbing: " + tgt_url)
                 
 def main():
     print "Started"

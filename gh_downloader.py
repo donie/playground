@@ -82,8 +82,11 @@ def page_download(page_url, folder):
             tgt_url = str(src.get('src').replace('small', 'big'))
             print "saving : " + tgt_url 
             tgt_name = os.path.basename(tgt_url)
-            urlgrabber.urlgrab(tgt_url, "./" + folder + "/" + tgt_name, progress_obj=urlgrabber.progress.TextMeter())
-
+            try:
+                urlgrabber.urlgrab(tgt_url, "./" + folder + "/" + tgt_name, progress_obj=urlgrabber.progress.TextMeter())
+            except urlgrabber.grabber.URLGrabError as detail:
+                print "Error eccours: " + detail
+                
 def main():
     print "Started"
     try:
